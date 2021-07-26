@@ -25,6 +25,8 @@ def require_mandatory_urls(func):
         """
         if not request.user.is_anonymous:
             profile = request.user.profile
+            print(request.user)
+            print(request.user.profile)
             if not request.path.startswith(PROFILE_URL) and not profile.filled_out:
                 return redirect(PROFILE_URL)
 
