@@ -4,12 +4,12 @@ APIs for extending the python social auth pipeline
 import logging
 
 from django.shortcuts import redirect
+from django_redis import get_redis_connection
 from rolepermissions.checkers import has_role
 from social_core.exceptions import AuthException
 
 from backends.base import BaseEdxOAuth2
 from backends.utils import update_email
-from django_redis import get_redis_connection
 from dashboard.api import CACHE_KEY_FAILURE_NUMS_BY_USER, FIELD_USER_ID_BASE_STR, CACHE_KEY_FAILED_USERS_NOT_TO_UPDATE
 from micromasters.utils import now_in_utc
 from profiles.models import Profile
@@ -133,7 +133,7 @@ def set_last_update(details, *args, **kwargs):  # pylint: disable=unused-argumen
     return details
 
 
-def flush_redis_cache(*, user, **kwargs):
+def flush_redis_cache(*, user, **kwargs):  # pylint: disable=unused-argument
     """
     flush the redis cache on a new login
     Args:
