@@ -70,7 +70,6 @@ services:
       - sftp
     extra_hosts:
       - ${OPENEDX_HOST_ENTRY:-localhost:127.0.0.1}
-      - ${MITXONLINE_OPENEDX_HOST_ENTRY:-localhost:127.0.0.1}
 
   watch:
     build:
