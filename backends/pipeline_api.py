@@ -8,6 +8,9 @@ from rolepermissions.checkers import has_role
 from social_core.exceptions import AuthException
 
 from backends.base import BaseEdxOAuth2
+from backends.utils import update_email
+from django_redis import get_redis_connection
+from dashboard.api import CACHE_KEY_FAILURE_NUMS_BY_USER, FIELD_USER_ID_BASE_STR, CACHE_KEY_FAILED_USERS_NOT_TO_UPDATE
 from micromasters.utils import now_in_utc
 from profiles.models import Profile
 from profiles.util import split_name
@@ -15,6 +18,7 @@ from roles.models import (
     Instructor,
     Staff,
 )
+
 
 log = logging.getLogger(__name__)
 
@@ -129,12 +133,17 @@ def set_last_update(details, *args, **kwargs):  # pylint: disable=unused-argumen
     return details
 
 
-def update_email(user_profile_edx, user):
+def flush_redis_cache(*, user, **kwargs):
     """
-    updates email address of user
+    flush the redis cache on a new login
     Args:
-        user_profile_edx (dict): user details from edX
         user (User): user object
     """
-    user.email = user_profile_edx.get('email')
-    user.save()
+    if not user:
+        return
+
+    # Update redis cache if user had invalid credentials
+    con = get_redis_connection("redis")
+    user_key = FIELD_USER_ID_BASE_STR.format(user.id)
+    con.hdel(CACHE_KEY_FAILURE_NUMS_BY_USER, user_key)
+    con.srem(CACHE_KEY_FAILED_USERS_NOT_TO_UPDATE, user.id)
